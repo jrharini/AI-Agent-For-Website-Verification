@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Spellcheck.ai</title>
+    <meta name="description"
+        content="Fix spelling mistakes in paragraphs or websites using AI and dictionary-based tools. Audit web content with smart suggestions. Try Spellcheck.ai now!">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0b0f1a, #101522, #151e30);
+            /* darker gradient like SS2 */
+            --accent: #00d5ff;
+            /* brighter neon blue */
+            --accent-hover: #00bde6;
+            --text-light: #e9f1ff;
+            /* softer white */
+            --text-muted: #7f9bb4;
+            /* cooler gray for muted text */
+            --card-bg: rgba(255, 255, 255, 0.04);
+            /* more subtle box background */
+            --blur: blur(12px);
+            /* slight blur for background panels */
+        }
+
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-light);
+            display: flex;
+            height: 100vh;
+        }
+
+        body.light-mode {
+            --bg-gradient: linear-gradient(135deg, #f5f7fa, #dbe2ef);
+            --accent: #007acc;
+            --accent-hover: #005fa3;
+            --text-light: #1a1a1a;
+            --text-muted: #4a4a4a;
+            --card-bg: rgba(255, 255, 255, 0.8);
+            --blur: blur(6px);
+        }
+
+        body.light-mode .sidebar {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--text-light);
+        }
+
+        body.light-mode .folder-item,
+        body.light-mode .chat-item {
+            color: var(--text-light);
+        }
+
+        body.light-mode .folder-item:hover,
+        body.light-mode .chat-item:hover {
+            color: var(--accent);
+        }
+
+        body.light-mode .prompt-box {
+            background: var(--card-bg);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: var(--text-light);
+        }
+
+        body.light-mode .selected-mode {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        body.light-mode .input-box {
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .input-box input {
+            color: var(--text-light);
+        }
+
+        body.light-mode .output-box {
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            color: #000;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-mode .output-box h4 {
+            color: #d62828;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: var(--blur);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            padding: 24px;
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .folders,
+        .chats {
+            padding: 0 24px;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .sidebar h4 {
+            color: var(--text-muted);
+            margin: 16px 0 8px;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .folder-item,
+        .chat-item {
+            padding: 8px 0;
+            color: var(--text-light);
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .folder-item:hover,
+        .chat-item:hover {
+            color: var(--accent);
+        }
+
+        .new-chat {
+            padding: 20px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .new-chat button {
+            width: 100%;
+            background: var(--accent);
+            border: none;
+            color: #000;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            /* <-- add this */
+            height: 100vh;
+            /* ensures full height */
+        }
+
+
+        .chat-window {
+            flex-grow: 1;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .chat-window h2 {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .prompt-grid {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 40px 0;
+        }
+
+        .prompt-box {
+            background: var(--card-bg);
+            backdrop-filter: var(--blur);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 20px 12px;
+            width: 160px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .prompt-box:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+        }
+
+        .selected-mode {
+            background: var(--accent);
+            color: #000;
+            box-shadow: 0 0 20px var(--accent);
+        }
+
+        #mode-message {
+            color: var(--accent);
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .input-area {
+            position: relative;
+            /* instead of fixed */
+            left: 0;
+            /* remove sidebar offset if needed */
+            right: 0;
+            bottom: 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: var(--blur);
+        }
+
+        .input-box {
+            display: flex;
+            align-items: center;
+            max-width: 700px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 15px;
+            gap: 10px;
+        }
+
+        .input-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-size: 16px;
+            outline: none;
+        }
+
+        .input-box button {
+            background: var(--accent);
+            border: none;
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .output-section {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: nowrap;
+            /* force single line layout */
+            gap: 20px;
+            margin: 20px auto;
+            padding: 0 20px;
+            overflow-x: auto;
+            /* scrollable on small screens */
+            max-width: 100%;
+        }
+
+        .output-box {
+            flex: 1;
+            min-width: 250px;
+            max-width: 100%;
+            height: 230px;
+            background: rgba(0, 0, 0, 0.3);
+            /* darker semi-transparent box */
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            /* cyan border */
+            border-radius: 12px;
+            padding: 14px;
+            color: #fdfdfd;
+            box-shadow: 0 0 12px rgba(0, 255, 255, 0.15);
+            text-align: left;
+            overflow-y: auto;
+            transition: 0.3s;
+        }
+
+        .output-box h4 {
+            color: #ff4c4c;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .output-box pre {
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.4;
+        }
+
+        /* Hide vertical scrollbars while keeping scrolling functionality */
+        .output-box::-webkit-scrollbar {
+            width: 8px;
+            /* or 0px if you want it completely invisible */
+        }
+
+        .output-box::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .output-box::-webkit-scrollbar-thumb {
+            background: transparent;
+            /* or match the box background to make it blend */
+        }
+
+        .output-box {
+            scrollbar-width: none;
+            /* for Firefox */
+            -ms-overflow-style: none;
+            /* for Internet Explorer 10+ */
+        }
+
+        .output-box::-webkit-scrollbar {
+            display: none;
+            /* completely hides it in WebKit browsers */
+        }
+
+        /* Hide scrollbar but keep scroll functionality */
+        .output-box {
+            scrollbar-width: thin;
+            /* Firefox */
+            scrollbar-color: transparent transparent;
+            /* Firefox */
+            -ms-overflow-style: none;
+            /* IE and Edge */
+        }
+
+        /* Chrome, Safari, Edge */
+        .output-box::-webkit-scrollbar {
+            width: 8px;
+            /* or smaller if needed */
+        }
+
+        .output-box::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .output-box::-webkit-scrollbar-thumb {
+            background-color: transparent;
+            /* transparent thumb */
+            border-radius: 8px;
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: inherit;
+            cursor: pointer;
+        }
+
+        .input-area {
+            position: fixed;
+            bottom: 0;
+            left: 260px;
+            /* to account for your sidebar */
+            right: 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: var(--blur);
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 20px;
+            /* space between box and link */
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .input-box {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 15px;
+        }
+
+        .input-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-size: 16px;
+            outline: none;
+        }
+
+        .audit-link {
+            color: var(--accent);
+            text-decoration: underline;
+            font-size: 14px;
+
+            .audit-link {
+                margin: 0;
+                padding: 0;
+                display: inline;
+            }
+
+        }
+
+        .audit-link:hover {
+            color: var(--accent-hover);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <div class="logo">
+            <span>My Chats</span>
+            <button id="menuToggle" aria-label="Open sidebar menu" class="icon-button">
+                <i class="fa-solid fa-bars" aria-hidden="true"></i>
+            </button>
+        </div>
+
+        <div class="folders">
+            <h4>Folders</h4>
+            <div class="folder-item" id="homeLink"><i class="fa-solid fa-house" aria-hidden="true"></i> Home</div>
+            <div class="folder-item"><a href="/about" style="color: inherit; text-decoration: none;"><i
+                        class="fa-solid fa-circle-info" aria-hidden="true"></i> About Us</a></div>
+            <div class="folder-item"><a href="/history" style="color: inherit; text-decoration: none;"><i
+                        class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> History</a></div>
+            <div class="folder-item" id="themeToggle" role="button" tabindex="0" aria-label="Toggle theme"><i
+                    class="fa-solid fa-moon" aria-hidden="true"></i> Theme</div>
+        </div>
+
+        <div class="chats">
+            <h4>Recent Tasks</h4>
+            <div class="chat-item">Spellcheck a website article</div>
+            <div class="chat-item">Fix spelling in a paragraph</div>
+            <div class="chat-item">Compare AI and dictionary results</div>
+        </div>
+        <div class="new-chat">
+            <button id="newSpellcheckBtn">New Spellcheck</button>
+        </div>
+    </div>
+    <!-- <div>
+        <a href="{{ url_for('static', filename='/lighthouse_report.html') }}" target="_blank">View Audit Report</a>
+    </div> -->
+
+
+    <div class="main">
+        <div class="chat-window" id="mainContent">
+            <h2>Smart Spellcheck for Paragraphs and URLs</h2>
+            <p style="color: #aaa; text-align: center; max-width: 480px; margin: 0 auto;">Enter a paragraph or website
+                URL to automatically detect and correct spelling errors using both AI-powered and dictionary-based tools
+            </p>
+
+            <div class="prompt-grid">
+                <div class="prompt-box" id="dictionaryBox" role="button" tabindex="0"
+                    aria-label="Select dictionary-based mode">Dictionary-Based</div>
+                <div class="prompt-box" id="llmBox" role="button" tabindex="0" aria-label="Select LLM-based mode">
+                    LLM-Based</div>
+                <div class="prompt-box" id="combinedBox" role="button" tabindex="0" aria-label="Select combined mode">
+                    Combined Mode</div>
+            </div>
+
+            <p id="mode-message">{{ message }}</p>
+
+            <div id="results" aria-live="polite">
+                {% if text %}
+                <div class="output-section">
+                    <div class="output-box">
+                        <h4>Scraped Text</h4>
+                        <pre>{{ text }}</pre>
+                        <p style="color: #666">Word Count: {{ word_count }}</p>
+                    </div>
+
+                    {% if selected_mode in ['dictionary', 'combined'] %}
+                    <div class="output-box">
+                        <h4>Dictionary Corrections</h4>
+                        <pre>{{ dict_corrections or "No spelling mistakes found (dictionary)." }}</pre>
+                    </div>
+                    {% endif %}
+
+                    {% if selected_mode in ['llm', 'combined'] %}
+                    <div class="output-box">
+                        <h4>LLM Corrections</h4>
+                        <pre>{{ llm_corrections or "No spelling mistakes found (LLM)." }}</pre>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% if copy_audit_result %}
+                <div class="output-box hidden">
+                    <h4>Copy Audit</h4>
+                    <pre>
+       Headline ≤ 12 words: {{ "✅" if copy_audit_result.headline_check else "❌" }}
+       Readability ≤ 8th Grade: {{ "✅" if copy_audit_result.is_readable else "❌" }} (Score: {{ "%.2f"|format(copy_audit_result.flesch_score) }})
+       CTA Verb Present: {{ "✅" if copy_audit_result.cta_present else "❌" }}
+       Jargon < 2%: {{ "✅" if copy_audit_result.jargon_ok else "❌" }}
+       Testimonial/Review Block: {{ "✅" if copy_audit_result.testimonial_present else "❌" }}
+    </pre>
+                </div>
+                {% endif %}
+
+            </div>
+
+            <form method="POST" id="inputForm">
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <div class="input-box">
+                            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                            <input type="text" name="input_text"
+                                aria-label="Enter paragraph or website URL to check spelling"
+                                placeholder="Enter paragraph or URL...">
+                            <button type="submit" id="submitBtn" aria-label="Submit Spellcheck Request">
+                                <span id="btnText"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i></span>
+                                <span id="btnLoading" class="hidden">
+                                    <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Processing...
+                                </span>
+                            </button>
+                        </div>
+                        {% if show_audit_report %}
+                        <a href="{{ url_for('static', filename='lighthouse_report.html') }}" target="_blank"
+                            class="audit-link">
+                            View Audit Report[1]
+                        </a>
+                        <a href="/copy-audit" target="_blank" class="audit-link">
+                            [2]
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                <input type="hidden" name="mode" value="combined" id="modeInput">
+            </form>
+
+        </div>
+    </div>
+    <script>
+        const boxes = {
+            dictionary: document.getElementById("dictionaryBox"),
+            llm: document.getElementById("llmBox"),
+            combined: document.getElementById("combinedBox")
+        };
+
+        const modeMessage = document.getElementById("mode-message");
+        const modeInput = document.getElementById("modeInput");
+        const results = document.getElementById("results");
+        const inputForm = document.getElementById("inputForm");
+        const inputField = document.querySelector("input[name='input_text']");
+
+        function resetHighlight() {
+            Object.values(boxes).forEach(box => box.classList.remove("selected-mode"));
+        }
+
+        function selectMode(mode) {
+            resetHighlight();
+            boxes[mode].classList.add("selected-mode");
+            modeInput.value = mode;
+            modeMessage.innerText = mode === "dictionary"
+                ? "Enter a paragraph or URL to run Dictionary-Based spellcheck"
+                : mode === "llm"
+                    ? "Enter a paragraph or URL to run LLM-Based spellcheck"
+                    : "Enter a paragraph or URL to run Combined Mode spellcheck";
+        }
+
+        boxes.dictionary.onclick = () => selectMode("dictionary");
+        boxes.llm.onclick = () => selectMode("llm");
+        boxes.combined.onclick = () => selectMode("combined");
+
+        // ➕ Add Enter key support for accessibility
+        Object.entries(boxes).forEach(([key, box]) => {
+            box.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") selectMode(key);
+            });
+        });
+
+        document.getElementById("homeLink").onclick =
+            document.getElementById("newSpellcheckBtn").onclick = () => {
+                results.innerHTML = "";
+                modeMessage.innerText = "";
+                inputField.value = "";
+                resetHighlight();
+                modeInput.value = "combined";
+            };
+
+        const themeToggle = document.getElementById("themeToggle");
+        const body = document.body;
+        if (localStorage.getItem("theme") === "light") body.classList.add("light-mode");
+
+        themeToggle.onclick = () => {
+            body.classList.toggle("light-mode");
+            localStorage.setItem("theme", body.classList.contains("light-mode") ? "light" : "dark");
+        };
+        // ➕ Enter key toggle for theme
+        themeToggle.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") themeToggle.click();
+        });
+
+        inputForm.addEventListener("submit", function () {
+            document.getElementById("btnText").classList.add("hidden");
+            document.getElementById("btnLoading").classList.remove("hidden");
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,88 @@
+<!-- templates/info.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Spellcheck.ai</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    body {
+      background: #000;
+      color: #ccc;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: auto;
+    }
+
+    h1 {
+      color: #00bfff;
+      margin-bottom: 24px;
+    }
+
+    p,
+    li {
+      line-height: 1.8;
+      font-size: 16px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    a {
+      color: #00bfff;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .back-link {
+      margin-top: 30px;
+      display: inline-block;
+      color: #00bfff;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>About Spellcheck.ai</h1>
+    <p>
+      Welcome to <strong>Spellcheck.ai</strong>!<br><br>
+      This tool allows you to paste a paragraph or provide a website URL to check for spelling mistakes.
+    </p>
+    <p>
+      It uses two powerful methods to identify spelling errors:
+    <ul>
+      <li><strong>Dictionary-Based Spellcheck</strong>: Checks each word against a standard dictionary.</li>
+      <li><strong>LLM-Based Spellcheck</strong>: Uses a Large Language Model (LLM) to detect spelling mistakes and
+        suggest corrections based on context.
+      </li>
+    </ul>
+    </p>
+    <p>
+      To begin, select a spellcheck mode — <strong>Dictionary-Based</strong>, <strong>LLM-Based</strong>, or
+      <strong>Combined Mode</strong> — then paste a paragraph or website URL into the input box on the home page to view
+      spelling corrections based on your choice.
+    </p>
+    <p>
+      You can also view your previous spellchecks by clicking the <strong>clock icon</strong> in the sidebar.
+    </p>
+
+
+    <a href="/" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+  </div>
+</body>
+
+</html>

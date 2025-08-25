@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Audit Report</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f1f5f9;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .technical-audit {
+      margin-top: 40px;
+      font-family: Arial, sans-serif;
+    }
+
+    .audit-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+    }
+
+    .audit-table th,
+    .audit-table td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .audit-table th {
+      background-color: #f7f7f7;
+      font-weight: bold;
+    }
+
+    .technical-audit h2 {
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    .technical-audit h3 {
+      margin-top: 30px;
+      font-size: 18px;
+    }
+
+    .sidebar {
+      width: 220px;
+      background-color: #1e293b;
+      color: white;
+      padding: 20px;
+    }
+
+    .sidebar h2 {
+      font-size: 22px;
+      margin-bottom: 30px;
+    }
+
+    .sidebar a {
+      display: block;
+      color: #cbd5e1;
+      text-decoration: none;
+      margin: 15px 0;
+    }
+
+    .sidebar a:hover {
+      color: white;
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 30px 40px;
+    }
+
+    .scores {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .score-box {
+      flex: 1;
+      min-width: 180px;
+      background: white;
+      padding: 16px;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    }
+
+    .score-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    .score {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .chart-container {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 500px;
+      margin-bottom: 20px;
+    }
+
+    .audit-summary,
+    .audit-details {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      max-width: 800px;
+    }
+
+    .audit-details ul {
+      margin-left: 20px;
+    }
+
+    h3,
+    h4,
+    h5 {
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="sidebar">
+    <h2>Spellcheck.ai</h2>
+    <a href="#">Dashboard</a>
+    <a href="#">Audit Reports</a>
+    <a href="#">Settings</a>
+    <a href="#">Help</a>
+  </div>
+
+  <div class="main-content">
+    <h2>Audit Report</h2>
+
+    <!-- Scores -->
+    <div class="scores">
+      <div class="score-box">
+        <div class="score-title">Technical</div>
+        <div class="score"
+          style="color: {{ 'green' if technical_score >= 75 else 'orange' if technical_score >= 50 else 'red' }}">
+          {{ technical_score }}/100
+        </div>
+      </div>
+      <div class="score-box">
+        <div class="score-title">Accessibility</div>
+        <div class="score"
+          style="color: {{ 'green' if accessibility_score >= 75 else 'orange' if accessibility_score >= 50 else 'red' }}">
+          {{ accessibility_score }}/100
+        </div>
+      </div>
+      <div class="score-box">
+        <div class="score-title">Conversion</div>
+        <div class="score"
+          style="color: {{ 'green' if conversion_score >= 75 else 'orange' if conversion_score >= 50 else 'red' }}">
+          {{ conversion_score }}/100
+        </div>
+      </div>
+      <div class="score-box">
+        <div class="score-title">Persuasion</div>
+        <div class="score"
+          style="color: {{ 'green' if persuasion_score >= 75 else 'orange' if persuasion_score >= 50 else 'red' }}">
+          {{ persuasion_score }}/100
+        </div>
+      </div>
+    </div>
+
+    <!-- Chart + Summary Side-by-Side in Flex Layout -->
+    <div
+      style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 30px; align-items: flex-start; margin-bottom: 30px;">
+
+      <!-- Chart Container -->
+      <div class="chart-container" style="flex: 1 1 500px;">
+        <h3>Overall Audit Summary</h3>
+        <canvas id="scoreChart"></canvas>
+      </div>
+
+      <!-- Summary Container -->
+      <div
+        style="flex: 1 1 400px; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);">
+        <p style="margin: 0 0 10px;"><strong>URL:</strong> {{ input_url }}</p>
+        <h4 style="margin: 0 0 10px;">Summary</h4>
+        <p style="margin: 0 0 10px;">
+          This landing page audit highlights the overall performance across four categories:
+          <strong>Technical</strong>, <strong>Accessibility</strong>, <strong>Conversion</strong>, and
+          <strong>Persuasion</strong>.
+          Based on the analysis, focus areas for improvement can significantly enhance user experience,
+          accessibility compliance, and conversion effectiveness.
+        </p>
+        <h5 style="margin: 20px 0 10px;">Critical Issues</h5>
+        <ul style="padding-left: 20px; margin: 0;">
+          <li style="color: #dc2626;">Missing alt text on images (Accessibility)</li>
+          <li style="color: #dc2626;">Slow page load on mobile (Technical)</li>
+          <li style="color: #dc2626;">Unclear value proposition (Persuasion)</li>
+          <li style="color: #ca8a04;">CTA buttons not prominent (Conversion)</li>
+        </ul>
+      </div>
+
+    </div>
+    <!-- Technical Score Audit Section -->
+    <div class="technical-audit">
+      <h2>1. Technical Score</h2>
+
+      <h3>Lighthouse Performance Integration</h3>
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Rule</th>
+            <th>Lighthouse Metric</th>
+            <th>Impact</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>31</td>
+            <td>Total page weight ≤ 2 MB desktop / 1 MB mobile</td>
+            <td>Total Blocking Time (TBT)</td>
+            <td>High</td>
+          </tr>
+          <tr>
+            <td>32</td>
+            <td>Lighthouse Performance score ≥ 75</td>
+            <td>Overall Performance Score</td>
+            <td>High</td>
+          </tr>
+          <tr>
+            <td>33</td>
+            <td>All images ≤ 500 KB each (compressed)</td>
+            <td>Largest Contentful Paint (LCP)</td>
+            <td>Medium</td>
+          </tr>
+          <tr>
+            <td>34</td>
+            <td><code>loading="lazy"</code> on below-fold images</td>
+            <td>Cumulative Layout Shift (CLS)</td>
+            <td>Medium</td>
+          </tr>
+          <tr>
+            <td>35</td>
+            <td>Site served over HTTPS</td>
+            <td>Security Score</td>
+            <td>Critical</td>
+          </tr>
+          <tr>
+            <td>36</td>
+            <td>First Contentful Paint (FCP) ≤ 1.8s</td>
+            <td>First Contentful Paint</td>
+            <td>High</td>
+          </tr>
+          <tr>
+            <td>37</td>
+            <td>Largest Contentful Paint (LCP) ≤ 2.5s</td>
+            <td>Largest Contentful Paint</td>
+            <td>High</td>
+          </tr>
+          <tr>
+            <td>38</td>
+            <td>Cumulative Layout Shift (CLS) ≤ 0.1</td>
+            <td>Cumulative Layout Shift</td>
+            <td>High</td>
+          </tr>
+          <tr>
+            <td>39</td>
+            <td>Total Blocking Time (TBT) ≤ 200ms</td>
+            <td>Total Blocking Time</td>
+            <td>High</td>
+          </tr>
+          <tr>
+            <td>40</td>
+            <td>Speed Index (SI) ≤ 3.4s</td>
+            <td>Speed Index</td>
+            <td>Medium</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Technical Implementation</h3>
+      <table class="audit-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Rule</th>
+            <th>Impact</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>6</td>
+            <td><code>&lt;meta name="viewport"&gt;</code> tag present</td>
+            <td>Critical</td>
+          </tr>
+          <tr>
+            <td>8</td>
+            <td>No horizontal scroll at 375 px width</td>
+            <td>High</td>
+          </tr>
+          <tr>
+            <td>9</td>
+            <td>Telephone/card fields use <code>inputmode="numeric"</code></td>
+            <td>Medium</td>
+          </tr>
+          <tr>
+            <td>12</td>
+            <td>Heading order never skips a level (e.g., h2 → h4)</td>
+            <td>Medium</td>
+          </tr>
+          <tr>
+            <td>13</td>
+            <td>All interactive elements reachable by Tab</td>
+            <td>High</td>
+          </tr>
+          <tr>
+            <td>61</td>
+            <td>No keyboard trap: focus can advance via Tab or exit via Esc</td>
+            <td>High</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+
+      const scores = {{ {
+        "technical": technical_score,
+        "accessibility": accessibility_score,
+        "conversion": conversion_score,
+        "persuasion": persuasion_score
+      } | tojson }};
+
+
+      const ctx = document.getElementById('scoreChart').getContext('2d');
+      const scoreChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Technical', 'Accessibility', 'Conversion', 'Persuasion'],
+          datasets: [{
+            label: 'Audit Score',
+            data: [scores.technical, scores.accessibility, scores.conversion, scores.persuasion],
+            backgroundColor: ['#4CAF50', '#2196F3', '#FFC107', '#FF5722']
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+    </script>
+</body>
+
+</html>
