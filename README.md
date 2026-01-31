@@ -5,3 +5,5 @@ An AI-powered tool that analyzes any website URL by extracting text, detecting s
 - Python (Flask, LangChain)
 - JavaScript
 - HTML
+- CSS
+
